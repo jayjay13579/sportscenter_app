@@ -14,18 +14,18 @@ LEFT JOIN enrollments e ON c.course_id = e.course_id
 ORDER BY c.course_id                        
 """
 
+# 기존 회원인지 확인
+MEMBER_CHECK_SQL = """
+SELECT COUNT(*)
+FROM members m
+WHERE m.name = %s
+"""
+
 # 회원이름으로 id 찾는 SQL 
 ID_CHECK_SQL = """
 SELECT m.member_id
 FROM members m
 WHERE m.name = %s
-"""
-
-# course id 받기
-CRS_ID_SQL = """
-SELECT c.course_id
-FROM courses c
-WHERE c.course_id = 
 """
 
 # 중복 확인
@@ -58,10 +58,25 @@ def list_courses(conn):
 
 # 1. 회원이름으로 회원 ID 추출
 def id_check(conn):
-    while True:
-        name_input = input("회원 이름을 입력하세요 : ").strip()
-        break
+    name_input = input("회원 이름을 입력하세요 : ").strip()
+
+    already_member = conn.execute(MEMBER_CHECK_SQL, (name_input,)).fetchone()
+    
+    if already_member['count'] == 0:
+        print("새로운 회원으로 등록합니다.")
+        gender = input("성별을 입력하세요 (M/F): ").strip()
+        birth_year = int(input("생년을 입력하세요 (ex: 2026) : ").strip())
+        # null해도 괜찮은 phone, email, region은 생략
+        conn.execute(
+                "INSERT INTO members (name, gender, birth_year, join_date)"
+                "VALUES (%s, %s, %s, CURRENT_DATE)",
+                (name_input, gender, birth_year)
+            )
+        print("등록완료되셨습니다.")
+    
     id = conn.execute(ID_CHECK_SQL,(name_input,)).fetchone()
+        # insert 시키고 id 가져오기 
+
     return id
     
 

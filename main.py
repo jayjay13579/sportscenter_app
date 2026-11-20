@@ -120,3 +120,4 @@ if __name__ == "__main__":
 
 
 
+# export VIRTUAL_ENV="$(cygpath -w "$VIRTUAL_ENV")"
